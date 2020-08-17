@@ -3,6 +3,7 @@ var ssc;
 $.when(
     $.getScript( "https://cdn.jsdelivr.net/npm/@hivechain/hivejs/dist/hivejs.min.js" ),
     $.getScript( "https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js" ),
+    $.getScript( "https://ryamer.com/js/engy.js" ),
     $.getScript( "./market.js" ),
     $.Deferred(function( deferred ){
         $( deferred.resolve );
@@ -22,16 +23,22 @@ var currentUser;
 var page = window.location.pathname.substring(window.location.pathname.lastIndexOf('/') + 1);
 
 var getData2 = function(table, account, offSet) {
-    table = table + "sellBook";
     return new Promise(function(resolve, reject) {  
-        ssc.find('nftmarket',table,{'account': account}, 1000, offSet, [], (err, result) => {          
-            if (result) {
-                resolve(result);
-            } else {
-                reject(Error("Failed to get JSON data!")); 
-            }
-        });
-    });
+        engy.nft.api.getEntireNFTSellbook(table, {}, []).then((res) => {
+            return resolve(res)
+        }).catch((e) => {
+            return reject(Error("Failed to get JSON data!")); 
+        })
+    }
+//     return new Promise(function(resolve, reject) {  
+//         ssc.find('nftmarket',table,{'account': account}, 1000, offSet, [], (err, result) => {          
+//             if (result) {
+//                 resolve(result);
+//             } else {
+//                 reject(Error("Failed to get JSON data!")); 
+//             }
+//         });
+//     });
 } 
 
 function show() {
