@@ -3,6 +3,7 @@ var ssc;
 $.when(
     $.getScript( "https://cdn.jsdelivr.net/npm/@hivechain/hivejs/dist/hivejs.min.js" ),
     $.getScript( "https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js" ),
+    $.getScript( "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" ),
     $.Deferred(function( deferred ){
         $( deferred.resolve );
     })
@@ -37,7 +38,7 @@ async function loadStream() {
 }
 
 function showData(data) {
-    const currentTimeStamp = new Date().getTime();
+    const currentTimeStamp = moment.utc()
     for (let i = 0; i < data.length; i++) {
         var div = jQuery('<div/>', {"class": 'tx-data'}).appendTo('#transactions');
         let buyer  = data[i].account;
@@ -46,7 +47,10 @@ function showData(data) {
         let nfts = data[i].counterparties[0].nftIds;
         let price = parseFloat(data[i].price);
         let symbol = data[i].priceSymbol;
-        let timestamp = data[i].timestamp;       
+        let timestamp = data[i].timestamp;    
+        if (moment.utc().unix() - data[i].timestamp > 86400){
+            continue
+        }   
         nftList = '<a ' + 'target="_blank"' + ' href="https://okean123.github.io/NFTExplorer/lookup.html?table=' + currentTable + '&id=' + nfts[0] + '">'+ nfts[0] +'</a>' 
         for (let i = 1; i < nfts.length; i++) {
             nftList += ', <a ' + 'target="_blank"' + ' href="https://okean123.github.io/NFTExplorer/lookup.html?table=' + currentTable + '&id=' + nfts[i] + '">'+ nfts[i] +'</a>' 
@@ -54,7 +58,7 @@ function showData(data) {
 
         $(div).append($('<p>' + '<a ' + 'target="_blank"' + ' href="https://peakd.com/@' + buyer + '">'+buyer+'</a>' + ' bought NFT(s) with ID(s) ' 
                         + nftList 
-                        + ' from ' + '<a ' + 'target="_blank"' + ' href="https://peakd.com/@' + sellers + '">'+sellers+'</a>' + ' for ' + price + ' ' + symbol + ' ' + '<em>' + timeDifference(currentTimeStamp,timestamp * 1000) + '</em>' + '</p>'));
+                        + ' from ' + '<a ' + 'target="_blank"' + ' href="https://peakd.com/@' + sellers + '">'+sellers+'</a>' + ' for ' + price + ' ' + symbol + ' ' + '<em>' + timeDifference(currentTimeStamp,timestamp) + '</em>' + '</p>'));
     }
 }
 
@@ -64,36 +68,14 @@ function clearDiv(div) {
 
 
 function timeDifference(current, previous) {
-
-    var msPerMinute = 60 * 1000;
-    var msPerHour = msPerMinute * 60;
-    var msPerDay = msPerHour * 24;
-    var msPerMonth = msPerDay * 30;
-    var msPerYear = msPerDay * 365;
-
-    var elapsed = current - previous;
-
-    if (elapsed < msPerMinute) {
-         return Math.round(elapsed/1000) + ' seconds ago';   
+    previous = moment.utc(moment.unix(previous))
+    let diff = current.diff(previous, "minutes")
+    if (diff == 0){
+        return  `${current.diff(previous, "seconds")} second(s) ago`
     }
-
-    else if (elapsed < msPerHour) {
-         return Math.round(elapsed/msPerMinute) + ' minutes ago';   
+    if (diff >= 60) {
+      return  `${current.diff(previous, "hours")} hour(s) ago`
     }
-
-    else if (elapsed < msPerDay ) {
-         return Math.round(elapsed/msPerHour ) + ' hours ago';   
-    }
-
-    else if (elapsed < msPerMonth) {
-        return Math.round(elapsed/msPerDay) + ' day(s) ago';   
-    }
-
-    else if (elapsed < msPerYear) {
-        return  Math.round(elapsed/msPerMonth) + ' months ago';   
-    }
-
-    else {
-        return Math.round(elapsed/msPerYear ) + ' years ago';   
-    }
+    return `${diff} minute(s) ago`
+     
 }
