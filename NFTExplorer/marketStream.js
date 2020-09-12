@@ -3,6 +3,7 @@ var ssc;
 $.when(
     $.getScript( "https://cdn.jsdelivr.net/npm/@hivechain/hivejs/dist/hivejs.min.js" ),
     $.getScript( "https://cdn.jsdelivr.net/npm/sscjs@latest/dist/ssc.min.js" ),
+    $.getScript( "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" ),
     $.Deferred(function( deferred ){
         $( deferred.resolve );
     })
@@ -64,36 +65,12 @@ function clearDiv(div) {
 
 
 function timeDifference(current, previous) {
-
-    var msPerMinute = 60 * 1000;
-    var msPerHour = msPerMinute * 60;
-    var msPerDay = msPerHour * 24;
-    var msPerMonth = msPerDay * 30;
-    var msPerYear = msPerDay * 365;
-
-    var elapsed = current - previous;
-
-    if (elapsed < msPerMinute) {
-         return Math.round(elapsed/1000) + ' seconds ago';   
+    current = moment.utc(moment.unix(current))
+    previous = moment.utc(moment.unix(previous))
+    let diff = current.diff(previous, "minutes")
+    if (diff >= 60) {
+      return  `${current.diff(previous, "hours")} hours ago`
     }
-
-    else if (elapsed < msPerHour) {
-         return Math.round(elapsed/msPerMinute) + ' minutes ago';   
-    }
-
-    else if (elapsed < msPerDay ) {
-         return Math.round(elapsed/msPerHour ) + ' hours ago';   
-    }
-
-    else if (elapsed < msPerMonth) {
-        return Math.round(elapsed/msPerDay) + ' day(s) ago';   
-    }
-
-    else if (elapsed < msPerYear) {
-        return  Math.round(elapsed/msPerMonth) + ' months ago';   
-    }
-
-    else {
-        return Math.round(elapsed/msPerYear ) + ' years ago';   
-    }
+    return `${diff} minutes ago`
+     
 }
